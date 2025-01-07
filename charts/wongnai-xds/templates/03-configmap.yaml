@@ -1,0 +1,27 @@
+{{ if .Values.xdsBootstrapConfig.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.xdsBootstrapConfig.name }}
+  labels:
+    {{- include "wongnai-xds.labels" . | nindent 4 }}
+data:
+  GRPC_XDS_BOOTSTRAP_CONFIG: |
+    {
+        "xds_servers": [
+            {
+                "server_uri": "{{ include "wongnai-xds.fullname" . }}:{{ .Values.service.grpcPort }}",
+                "channel_creds": [{"type": "insecure"}],
+                "server_features": ["xds_v3"]
+            }
+        ],
+        "node": {
+            "id": "anything",
+            "locality": {
+                "zone" : "k8s"
+            }
+        }
+    }
+
+{{- end }}
