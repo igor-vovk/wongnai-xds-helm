@@ -3,7 +3,7 @@
 Helm chart to ease the deployment of [wongnai/xds](https://github.com/wongnai/xds) GRPC XDS server to Kubernetes
 clusters.
 
-# Usage
+## Usage
 
 Installing it manually:
 
@@ -33,12 +33,12 @@ spec:
     namespace: xds-server
 ```
 
-## Checking the deployment
+### Checking the deployment
 
 Port-forward the port 9000 to your local machine and try opening it.
 It should return the list of resources in the cluster.
 
-## Exposing GRPC APIs to XDS server
+### Exposing GRPC APIs to XDS server
 
 This is described in [wongnai/xds documentation](https://github.com/wongnai/xds?tab=readme-ov-file#virtual-api-gateway).
 Set up labels for your GRPC servers to publish information about GRPC APIs they expose:
@@ -53,7 +53,7 @@ metadata:
     xds.lmwn.com/grpc-service: package.name.ExampleService,package.name.Example2Service
 ```
 
-## Setting up GRPC clients
+### Setting up GRPC clients
 
 By default, Helm chart creates a `xds-bootstrap-config` config map with `GRPC_XDS_BOOTSTRAP_CONFIG` environment
 variable, which is everything that is needed to configure GRPC clients to use this XDS server.
