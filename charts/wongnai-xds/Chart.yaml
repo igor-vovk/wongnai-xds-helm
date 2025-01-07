@@ -1,0 +1,9 @@
+apiVersion: v2
+name: wongnai-xds
+description: A Helm chart for wongnai/xds server
+
+type: application
+
+version: 0.1.0
+
+appVersion: "v1.2.0"

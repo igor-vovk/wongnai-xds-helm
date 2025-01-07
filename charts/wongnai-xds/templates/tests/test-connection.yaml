@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "wongnai-xds.fullname" . }}-test-connection"
+  labels:
+    {{- include "wongnai-xds.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "wongnai-xds.fullname" . }}:{{ .Values.service.httpPort }}']
+  restartPolicy: Never

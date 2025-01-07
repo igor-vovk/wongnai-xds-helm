@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "wongnai-xds.fullname" . }}
+  labels:
+    {{- include "wongnai-xds.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.service.grpcPort }}
+      targetPort: grpc
+      name: grpc
+    - port: {{ .Values.service.httpPort }}
+      targetPort: http
+      name: http
+  selector:
+    {{- include "wongnai-xds.selectorLabels" . | nindent 4 }}
