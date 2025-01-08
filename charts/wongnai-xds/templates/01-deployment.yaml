@@ -29,7 +29,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ .Values.deployment.image }}:{{ .Chart.AppVersion }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - name: grpc
               containerPort: 5000
