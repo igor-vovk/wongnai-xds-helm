@@ -3,6 +3,16 @@ entries:
   wongnai-xds:
   - apiVersion: v2
     appVersion: v1.2.0
+    created: "2025-01-08T04:48:50.850308976Z"
+    description: A Helm chart for wongnai/xds server
+    digest: 4d174ac52788c6786e6ea2797f53dd53b8d15e4d27aac2a1b8f12c5c3af895da
+    name: wongnai-xds
+    type: application
+    urls:
+    - https://github.com/igor-vovk/wongnai-xds-helm/releases/download/wongnai-xds-1.2.0-1/wongnai-xds-1.2.0-1.tgz
+    version: 1.2.0-1
+  - apiVersion: v2
+    appVersion: v1.2.0
     created: "2025-01-07T06:34:48.493514562Z"
     description: A Helm chart for wongnai/xds server
     digest: 71e5c8695289c29a36d0899dcb8cc386ee7a7253a23abdfa5af6e03dcc6bdfaf
@@ -11,4 +21,4 @@ entries:
     urls:
     - https://github.com/igor-vovk/wongnai-xds-helm/releases/download/wongnai-xds-0.1.0/wongnai-xds-0.1.0.tgz
     version: 0.1.0
-generated: "2025-01-07T06:34:48.49352434Z"
+generated: "2025-01-08T04:48:50.850351365Z"
