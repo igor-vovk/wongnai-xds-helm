@@ -105,5 +105,5 @@ Then you should use`xds:///apigw1` address to connect to your GRPC servers, spec
 
 ## Versioning
 
-Version of the chart captures the version of XDS server it uses `<xds-version>+<chart-version>`.
-So, for example, `1.2.0+1` is the first version of the chart for `1.2.0` version of the XDS server.
+Version of the chart captures the version of XDS server it uses `<xds-version>-<chart-version>`.
+So, for example, `1.2.0-1` is the first version of the chart for `1.2.0` version of the XDS server.
