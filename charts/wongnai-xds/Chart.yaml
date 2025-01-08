@@ -4,6 +4,6 @@ description: A Helm chart for wongnai/xds server
 
 type: application
 
-version: 0.1.0
+version: 1.2.0+1
 
 appVersion: "v1.2.0"
