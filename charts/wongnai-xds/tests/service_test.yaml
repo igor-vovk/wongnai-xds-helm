@@ -1,0 +1,57 @@
+suite: test service
+templates:
+  - service.yaml
+tests:
+  - it: should create service with correct name
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-wongnai-xds
+
+  - it: should have correct ports
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            port: 5000
+            targetPort: grpc
+            protocol: TCP
+            name: grpc
+      - contains:
+          path: spec.ports
+          content:
+            port: 9000
+            targetPort: http
+            protocol: TCP
+            name: http
+
+  - it: should use correct selector
+    asserts:
+      - equal:
+          path: spec.selector
+          value:
+            app.kubernetes.io/name: wongnai-xds
+            app.kubernetes.io/instance: RELEASE-NAME
+
+  - it: should allow custom service ports
+    set:
+      service:
+        grpcPort: 6000
+        httpPort: 8000
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            port: 6000
+            targetPort: grpc
+            protocol: TCP
+            name: grpc
+      - contains:
+          path: spec.ports
+          content:
+            port: 8000
+            targetPort: http
+            protocol: TCP
+            name: http

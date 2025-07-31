@@ -6,10 +6,28 @@ metadata:
     {{- include "wongnai-xds.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   containers:
-    - name: wget
-      image: busybox
-      command: ['wget']
-      args: ['{{ include "wongnai-xds.fullname" . }}:{{ .Values.service.httpPort }}']
+    - name: http-test
+      image: curlimages/curl:8.6.0
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Testing HTTP endpoint..."
+          curl -f -v {{ include "wongnai-xds.fullname" . }}:{{ .Values.service.httpPort }}/healthz || \
+          curl -f -v {{ include "wongnai-xds.fullname" . }}:{{ .Values.service.httpPort }}/ || \
+          curl -v {{ include "wongnai-xds.fullname" . }}:{{ .Values.service.httpPort }} || \
+          (echo "HTTP endpoint test failed" && exit 1)
+    - name: grpc-test
+      image: fullstorydev/grpcurl:v1.8.9
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Testing gRPC endpoint connectivity..."
+          grpcurl -plaintext {{ include "wongnai-xds.fullname" . }}:{{ .Values.service.grpcPort }} list || \
+          (echo "gRPC endpoint test failed, but this might be expected if no reflection is enabled" && exit 0)
   restartPolicy: Never

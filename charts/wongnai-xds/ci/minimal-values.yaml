@@ -1,0 +1,20 @@
+# Minimal values for basic functionality testing
+deployment:
+  image: ghcr.io/wongnai/xds:latest
+
+service:
+  grpcPort: 5000
+  httpPort: 9000
+
+# Minimal resource requirements
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# Disable optional features
+xdsBootstrapConfig:
+  enabled: false
+
+serviceAccount:
+  create: false
