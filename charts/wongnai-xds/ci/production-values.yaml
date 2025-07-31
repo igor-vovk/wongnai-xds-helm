@@ -1,0 +1,53 @@
+# Production-like values for testing
+deployment:
+  image: ghcr.io/wongnai/xds:v1.3.0
+
+service:
+  grpcPort: 5000
+  httpPort: 9000
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Production security settings
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+    - ALL
+
+# Node affinity for production
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+        - key: node-type
+          operator: In
+          values:
+          - application
+
+# Tolerations for dedicated nodes
+tolerations:
+- key: "dedicated"
+  operator: "Equal"
+  value: "application"
+  effect: "NoSchedule"
+
+xdsBootstrapConfig:
+  enabled: true
+  name: xds-bootstrap-config

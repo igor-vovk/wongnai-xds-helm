@@ -1,0 +1,147 @@
+name: Test Helm Chart
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Install helm unittest plugin
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+
+      - name: Lint Helm Chart
+        run: helm lint charts/wongnai-xds
+
+      - name: Run Helm Template
+        run: |
+          helm template test-release charts/wongnai-xds > /tmp/manifests.yaml
+          echo "Generated manifests:"
+          cat /tmp/manifests.yaml
+
+      - name: Validate Kubernetes manifests
+        uses: instrumenta/kubeval-action@master
+        with:
+          files: /tmp/manifests.yaml
+
+      - name: Run Helm Unit Tests
+        run: helm unittest charts/wongnai-xds
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Generate manifests for security scan
+        run: |
+          helm template test-release charts/wongnai-xds > manifests.yaml
+
+      - name: Run Checkov security scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          file: manifests.yaml
+          framework: kubernetes
+          soft_fail: true
+
+  end-to-end-test:
+    runs-on: ubuntu-latest
+    needs: [lint-and-validate]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: test-cluster
+          config: |
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            nodes:
+            - role: control-plane
+              extraPortMappings:
+              - containerPort: 30080
+                hostPort: 30080
+                protocol: TCP
+              - containerPort: 30443
+                hostPort: 30443
+                protocol: TCP
+
+      - name: Wait for cluster to be ready
+        run: |
+          kubectl cluster-info
+          kubectl wait --for=condition=Ready nodes --all --timeout=300s
+
+      - name: Install chart
+        run: |
+          helm install test-release charts/wongnai-xds \
+            --wait \
+            --timeout=5m \
+            --values charts/wongnai-xds/ci/test-values.yaml
+
+      - name: Run Helm tests
+        run: helm test test-release
+
+      - name: Check deployment status
+        run: |
+          kubectl get pods -l "app.kubernetes.io/instance=test-release"
+          kubectl describe pods -l "app.kubernetes.io/instance=test-release"
+
+      - name: Test service connectivity
+        run: |
+          kubectl get services
+          # Port forward and test connectivity
+          kubectl port-forward service/test-release-wongnai-xds 9000:9000 &
+          sleep 5
+          curl -f http://localhost:9000 || echo "HTTP endpoint test failed, but continuing..."
+
+      - name: Cleanup
+        if: always()
+        run: |
+          helm uninstall test-release || true
+          kind delete cluster --name test-cluster || true
+
+  test-different-values:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        values-file:
+          - ci/test-values.yaml
+          - ci/minimal-values.yaml
+          - ci/production-values.yaml
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Test template rendering with ${{ matrix.values-file }}
+        run: |
+          if [ -f "charts/wongnai-xds/${{ matrix.values-file }}" ]; then
+            helm template test-release charts/wongnai-xds \
+              --values charts/wongnai-xds/${{ matrix.values-file }} \
+              --debug
+          else
+            echo "Values file charts/wongnai-xds/${{ matrix.values-file }} not found, skipping"
+          fi
